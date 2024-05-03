@@ -3,6 +3,10 @@
 # move things necessary for integration tests into build context.
 # this was based off the phoenix deployment; and is likely uglier and bulkier than necessary in a perfect world
 
+set -ex
+
+MAVEN_VERSION='3.8.8'
+
 mkdir -p testdata/doc/sphinx-guides/source/_static/util/
 cp ../solr/8.11.1/schema*.xml testdata/
 cp ../solr/8.11.1/solrconfig.xml testdata/
@@ -12,15 +16,17 @@ cd ../../
 cp -r scripts conf/docker-aio/testdata/
 cp doc/sphinx-guides/source/_static/util/createsequence.sql conf/docker-aio/testdata/doc/sphinx-guides/source/_static/util/
 
-wget -q https://downloads.apache.org/maven/maven-3/3.8.5/binaries/apache-maven-3.8.5-bin.tar.gz
-tar xfz apache-maven-3.8.5-bin.tar.gz
-mkdir maven
-mv apache-maven-3.8.5/* maven/
-echo "export JAVA_HOME=/usr/lib/jvm/jre-openjdk" > maven/maven.sh
-echo "export M2_HOME=../maven" >> maven/maven.sh
-echo "export MAVEN_HOME=../maven" >> maven/maven.sh
-echo "export PATH=../maven/bin:${PATH}" >> maven/maven.sh
-chmod 0755 maven/maven.sh
+if ! [ -d 'maven' ]; then
+	wget -q "https://downloads.apache.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz"
+	tar xfz "apache-maven-${MAVEN_VERSION}-bin.tar.gz"
+	mkdir -p maven
+	mv "apache-maven-${MAVEN_VERSION}"/* maven/
+	echo "export JAVA_HOME=${JAVA_HOME:-/usr/lib/jvm/jre-openjdk}" > maven/maven.sh
+	echo "export M2_HOME=../maven" >> maven/maven.sh
+	echo "export MAVEN_HOME=../maven" >> maven/maven.sh
+	echo "export PATH=../maven/bin:${PATH}" >> maven/maven.sh
+	chmod 0755 maven/maven.sh
+fi
 
 # not using dvinstall.zip for setupIT.bash; but still used in install.bash for normal ops
 source maven/maven.sh && mvn clean
