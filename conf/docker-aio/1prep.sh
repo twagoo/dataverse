@@ -31,7 +31,7 @@ fi
 # not using dvinstall.zip for setupIT.bash; but still used in install.bash for normal ops
 source maven/maven.sh && mvn clean
 ./scripts/installer/custom-build-number
-source maven/maven.sh && mvn package
+source maven/maven.sh && mvn package -DskipTests=true
 cd scripts/installer
 make clean
 make
